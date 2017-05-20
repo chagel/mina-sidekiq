@@ -41,6 +41,10 @@ set :sidekiq_timeout, 11
 # Sets the path to the configuration file of sidekiq
 set :sidekiq_config, -> { "#{fetch(:current_path)}/config/sidekiq.yml" }
 
+# ### sidekiq_require
+# Sets the path to the require file of sidekiq
+set :sidekiq_require, -> { "./config/initializers/sidekiq.rb" }
+
 # ### sidekiq_log
 # Sets the path to the log file of sidekiq
 #
@@ -118,7 +122,12 @@ namespace :sidekiq do
                           else
                             "-c #{sidekiq_concurrency}"
                           end
-        command %[#{fetch(:sidekiq)} -d -e #{fetch(:rails_env)} #{concurrency_arg} -C #{fetch(:sidekiq_config)} -i #{idx} -P #{pid_file} -L #{fetch(:sidekiq_log)}]
+        comment %{
+          #{fetch(:sidekiq)} -d -e #{fetch(:rails_env)} #{concurrency_arg} -C #{fetch(:sidekiq_config)} -i #{idx} -P #{pid_file} -L #{fetch(:sidekiq_log)} -r #{fetch(:sidekiq_require)}
+        }.strip
+        command %{
+          #{fetch(:sidekiq)} -d -e #{fetch(:rails_env)} #{concurrency_arg} -C #{fetch(:sidekiq_config)} -i #{idx} -P #{pid_file} -L #{fetch(:sidekiq_log)} -r #{fetch(:sidekiq_require)}
+        }.strip
       end
     end
   end
